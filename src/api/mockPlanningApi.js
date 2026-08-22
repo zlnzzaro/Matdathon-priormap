@@ -63,11 +63,10 @@ export async function analyzeTasks(rawInput, onStep = () => {}) {
     }
   })
 
-  // Focus Now: 가장 중요하고 긴급한 task 선택
+  // Focus Now: 중요도 우선, 동점이면 긴급도 기준
   const sorted = [...tasks].sort((a, b) => {
-    const scoreA = a.importance + a.urgency
-    const scoreB = b.importance + b.urgency
-    return scoreB - scoreA
+    if (b.importance !== a.importance) return b.importance - a.importance
+    return b.urgency - a.urgency
   })
 
   const focusNowTaskId = sorted[0].id
@@ -75,8 +74,10 @@ export async function analyzeTasks(rawInput, onStep = () => {}) {
   // Focus Now task에 추천 이유 강화
   const focusTask = tasks.find((t) => t.id === focusNowTaskId)
   if (focusTask) {
-    focusTask.recommendationReason =
-      `중요도(${focusTask.importance})와 긴급도(${focusTask.urgency})가 가장 높아 먼저 처리를 추천합니다.`
+    const isNeutral = focusTask.importance === 3 && focusTask.urgency === 3
+    focusTask.recommendationReason = isNeutral
+      ? '상황에 따라 달라지므로, 사용자 직접 드래그가 필요합니다.'
+      : '중요도가 가장 높고, 긴급도도 높아 먼저 처리를 추천합니다.'
   }
 
   return { tasks, focusNowTaskId }

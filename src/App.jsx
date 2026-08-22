@@ -2,7 +2,8 @@ import { useState } from 'react'
 import InputScreen from './components/InputScreen'
 import Sidebar from './components/Sidebar'
 import Matrix from './components/Matrix'
-import { analyzeTasks } from './api/mockPlanningApi'
+import TaskDetailModal from './components/TaskDetailModal'
+import { analyzeTasks } from './api/planningApi'
 import { validatePlanningResponse, createInitialDraft } from './types/planning'
 import { getCategory } from './utils/category'
 import { scoreToPosition } from './utils/position'
@@ -39,10 +40,26 @@ function convertToLegacyTask(task) {
   }
 }
 
+/**
+ * Focus Now는 중요도 우선, 동점이면 긴급도로 선택
+ */
+function pickFocusTaskId(taskList) {
+  if (!Array.isArray(taskList) || taskList.length === 0) return null
+
+  const sorted = [...taskList].sort((a, b) => {
+    if (b.importance !== a.importance) return b.importance - a.importance
+    if (b.urgency !== a.urgency) return b.urgency - a.urgency
+    return (a.createdAt || 0) - (b.createdAt || 0)
+  })
+
+  return sorted[0].id
+}
+
 export default function App() {
   const [draft, setDraft] = useState(createInitialDraft())
   const [tasks, setTasks] = useState([])
   const [focusNowTaskId, setFocusNowTaskId] = useState(null)
+  const [selectedTask, setSelectedTask] = useState(null)
 
   // 분석 요청
   const handleAnalyze = async (rawInput) => {
@@ -66,12 +83,13 @@ export default function App() {
 
       // 성공: 결과 화면으로 전환
       const legacyTasks = response.tasks.map(convertToLegacyTask)
+      const nextFocusTaskId = pickFocusTaskId(legacyTasks) || response.focusNowTaskId
       setTasks(legacyTasks)
-      setFocusNowTaskId(response.focusNowTaskId)
+      setFocusNowTaskId(nextFocusTaskId)
       setDraft((prev) => ({
         ...prev,
         tasks: response.tasks,
-        focusNowTaskId: response.focusNowTaskId,
+        focusNowTaskId: nextFocusTaskId,
         status: 'success',
         currentStep: undefined,
       }))
@@ -94,7 +112,18 @@ export default function App() {
   }
 
   const handleDelete = (id) => {
-    setTasks((prev) => prev.filter((task) => task.id !== id))
+    setTasks((prev) => {
+      const nextTasks = prev.filter((task) => task.id !== id)
+
+      // Focus Now가 삭제되면 남은 첫 task를 새 Focus Now로 지정
+      if (id === focusNowTaskId) {
+        setFocusNowTaskId(pickFocusTaskId(nextTasks))
+      }
+
+      return nextTasks
+    })
+
+    setSelectedTask((prev) => (prev?.id === id ? null : prev))
   }
 
   const handleDragStart = (e, id) => {
@@ -122,6 +151,20 @@ export default function App() {
     )
   }
 
+  // 카드 클릭 시 상세 모달 열기
+  const handleTaskClick = (task) => {
+    setSelectedTask(task)
+  }
+
+  // 태스크 메모 저장
+  const handleSaveTask = (taskId, updates) => {
+    setTasks((prev) =>
+      prev.map((task) => (task.id === taskId ? { ...task, ...updates } : task)),
+    )
+    // 선택된 태스크 정보도 업데이트
+    setSelectedTask((prev) => (prev && prev.id === taskId ? { ...prev, ...updates } : prev))
+  }
+
   // 입력 화면 또는 결과 화면
   if (draft.status === 'idle' || draft.status === 'analyzing' || draft.status === 'error') {
     return (
@@ -137,14 +180,32 @@ export default function App() {
 
   // 새 할일 추가 (결과 화면에서)
   const handleAdd = async (title) => {
-    const newTask = {
+    try {
+      const response = await analyzeTasks(title)
+      const validation = validatePlanningResponse(response)
+      if (!validation.valid) {
+        throw new Error(validation.error)
+      }
+
+      const analyzedTask = convertToLegacyTask(response.tasks[0])
+      setTasks((prev) => {
+        const nextTasks = [...prev, analyzedTask]
+        setFocusNowTaskId(pickFocusTaskId(nextTasks))
+        return nextTasks
+      })
+      return
+    } catch (error) {
+      console.warn('추가 task AI 분석 실패, 기본값으로 추가합니다:', error)
+    }
+
+    const fallbackTask = {
       id: `task-${Date.now()}`,
       title,
       description: '',
       importance: 50,
       urgency: 50,
       category: getCategory(50, 50),
-      reason: '사용자가 직접 추가',
+      reason: 'AI 분석에 실패해 기본 중요도(중간)로 추가되었습니다.',
       placed: true,
       x: 50,
       y: 50,
@@ -153,7 +214,12 @@ export default function App() {
       userModified: false,
       quadrant: 'important-urgent',
     }
-    setTasks((prev) => [...prev, newTask])
+
+    setTasks((prev) => {
+      const nextTasks = [...prev, fallbackTask]
+      setFocusNowTaskId(pickFocusTaskId(nextTasks))
+      return nextTasks
+    })
   }
 
   // 결과 화면
@@ -161,25 +227,28 @@ export default function App() {
 
   return (
     <div className="app app--with-focus">
-      {focusTask && (
-        <div className="focus-now">
-          <div className="focus-now__header">
-            <span className="focus-now__badge">🎯 Focus Now</span>
-            <span className="focus-now__ai-label">AI 추천</span>
-          </div>
-          <h2 className="focus-now__title">{focusTask.title}</h2>
-          {focusTask.dueDate && (
-            <p className="focus-now__meta">📅 {focusTask.dueDate}</p>
-          )}
-          {focusTask.estimatedMinutes && (
-            <p className="focus-now__meta">⏱️ 예상 {focusTask.estimatedMinutes}분</p>
-          )}
-          <p className="focus-now__reason">{focusTask.reason}</p>
-          <button className="focus-now__reset" onClick={handleReset}>
-            ← 다시 입력하기
-          </button>
+      <div className="focus-now">
+        <div className="focus-now__header">
+          <span className="focus-now__badge">Focus Now</span>
+          <span className="focus-now__ai-label">추천</span>
         </div>
-      )}
+        {focusTask ? (
+          <>
+            <h2 className="focus-now__title">{focusTask.title}</h2>
+            <p className="focus-now__reason">{focusTask.reason}</p>
+          </>
+        ) : (
+          <>
+            <h2 className="focus-now__title">추천 작업이 비어 있습니다</h2>
+            <p className="focus-now__reason">
+              왼쪽에서 할 일을 추가하거나 아래 버튼으로 메인 화면으로 돌아가 입력을 다시 시작해 주세요.
+            </p>
+          </>
+        )}
+        <button className="focus-now__reset" onClick={handleReset}>
+          ← 다시 입력하기
+        </button>
+      </div>
       <div className="app__main">
         <Sidebar
           tasks={tasks}
@@ -187,8 +256,20 @@ export default function App() {
           onDelete={handleDelete}
           onDragStart={handleDragStart}
         />
-        <Matrix tasks={tasks} onDrop={handleDropTask} onDragStart={handleDragStart} />
+        <Matrix 
+          tasks={tasks} 
+          onDrop={handleDropTask} 
+          onDragStart={handleDragStart}
+          onTaskClick={handleTaskClick}
+        />
       </div>
+      {selectedTask && (
+        <TaskDetailModal
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onSave={handleSaveTask}
+        />
+      )}
     </div>
   )
 }
