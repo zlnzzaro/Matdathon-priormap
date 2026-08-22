@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react'
 import { CATEGORY_INFO } from '../utils/constants'
 import './TaskDetailModal.css'
 
+const MISSING_SIGNAL_LABELS = {
+  deadlineContext: '마감 정보 부족',
+  impactContext: '영향도 정보 부족',
+  meetingImpact: '회의 중요도 정보 부족',
+}
+
 export default function TaskDetailModal({ task, onClose, onSave }) {
   const [notes, setNotes] = useState(task?.notes || '')
   const info = task ? CATEGORY_INFO[task.category] : null
@@ -15,9 +21,17 @@ export default function TaskDetailModal({ task, onClose, onSave }) {
   if (!task) return null
 
   const isNeutralScore = Math.round(task.importance) === 50 && Math.round(task.urgency) === 50
-  const analysisText = isNeutralScore
-    ? '상황에 따라 달라지므로, 사용자 직접 드래그가 필요합니다.'
-    : task.reason
+  const isLowConfidence = task.confidence === 'low' || isNeutralScore
+  const hasMissingSignals = Array.isArray(task.missingSignals) && task.missingSignals.length > 0
+  const missingLabels = hasMissingSignals
+    ? task.missingSignals
+        .slice(0, 3)
+        .map((signal) => MISSING_SIGNAL_LABELS[signal] || signal)
+    : []
+  const missingText = hasMissingSignals
+    ? `판단 신호가 부족해요: ${missingLabels.join(', ')}`
+    : '상황에 따라 달라지므로, 사용자 직접 드래그가 필요합니다.'
+  const analysisText = isLowConfidence ? missingText : task.reason
 
   const handleSave = () => {
     onSave(task.id, { notes })
@@ -73,7 +87,7 @@ export default function TaskDetailModal({ task, onClose, onSave }) {
           {analysisText && (
             <div className="modal__section">
               <h3 className="modal__section-title">AI 분석</h3>
-              <p className={`modal__reason${isNeutralScore ? ' modal__reason--warning' : ''}`}>
+              <p className={`modal__reason${isLowConfidence ? ' modal__reason--warning' : ''}`}>
                 {analysisText}
               </p>
             </div>

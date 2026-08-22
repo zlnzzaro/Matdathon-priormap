@@ -1,0 +1,29 @@
+{
+  "name": "priormap",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "server": "node server/index.js",
+    "dev:all": "concurrently -n vite,api -c blue,green \"npm:dev\" \"npm:server\"",
+    "build": "vite build",
+    "start": "node server/index.js",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@github/copilot-sdk": "^1.0.11",
+    "applicationinsights": "^3.7.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.0.5",
+    "concurrently": "^9.2.1",
+    "vite": "^8.2.1"
+  }
+}

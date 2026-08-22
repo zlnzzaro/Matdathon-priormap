@@ -1,12 +1,26 @@
 import { CATEGORY_INFO } from '../utils/constants'
 import './TaskCard.css'
 
+const MISSING_SIGNAL_LABELS = {
+  deadlineContext: '마감 정보 부족',
+  impactContext: '영향도 정보 부족',
+  meetingImpact: '회의 중요도 정보 부족',
+}
+
 export default function TaskCard({ task, onDelete, onDragStart }) {
   const info = CATEGORY_INFO[task.category]
   const isNeutralScore = Math.round(task.importance) === 50 && Math.round(task.urgency) === 50
-  const guidanceText = isNeutralScore
-    ? '상황에 따라 달라지므로, 사용자 직접 드래그가 필요합니다.'
-    : task.reason
+  const isLowConfidence = task.confidence === 'low' || isNeutralScore
+  const hasMissingSignals = Array.isArray(task.missingSignals) && task.missingSignals.length > 0
+  const missingLabels = hasMissingSignals
+    ? task.missingSignals
+        .slice(0, 2)
+        .map((signal) => MISSING_SIGNAL_LABELS[signal] || signal)
+    : []
+  const missingText = hasMissingSignals
+    ? `판단 신호 부족: ${missingLabels.join(', ')}`
+    : '상황에 따라 달라지므로, 사용자 직접 드래그가 필요합니다.'
+  const guidanceText = isLowConfidence ? missingText : task.reason
 
   return (
     <div
@@ -35,7 +49,7 @@ export default function TaskCard({ task, onDelete, onDragStart }) {
         </span>
       </div>
       {guidanceText && (
-        <p className={`task-card__reason${isNeutralScore ? ' task-card__reason--warning' : ''}`}>
+        <p className={`task-card__reason${isLowConfidence ? ' task-card__reason--warning' : ''}`}>
           {guidanceText}
         </p>
       )}

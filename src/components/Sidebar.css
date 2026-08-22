@@ -1,0 +1,75 @@
+.sidebar {
+  width: 30%;
+  min-width: 280px;
+  height: 100%;
+  background: rgba(12, 15, 20, 0.82);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  backdrop-filter: blur(6px);
+}
+
+.sidebar__title {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 0.04em;
+  margin: 0 0 16px;
+}
+
+.sidebar__form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.sidebar__input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.92);
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.sidebar__input::placeholder {
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.sidebar__input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12);
+}
+
+.sidebar__add-btn {
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 12px;
+  transition: background 0.18s, border-color 0.18s;
+}
+
+.sidebar__add-btn:hover {
+  background: rgba(255, 255, 255, 0.24);
+  border-color: rgba(255, 255, 255, 0.34);
+}
+
+.sidebar__add-btn:disabled {
+  opacity: 0.55;
+}
+
+.sidebar__list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.sidebar__empty {
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 13px;
+}
