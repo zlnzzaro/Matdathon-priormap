@@ -145,8 +145,8 @@ export function validatePlanningResponse(data) {
  */
 export function calculateQuadrant(importance, urgency) {
   const midpoint = (SCORE_MIN + SCORE_MAX) / 2
-  const isImportant = importance >= midpoint
-  const isUrgent = urgency >= midpoint
+  const isImportant = importance > midpoint
+  const isUrgent = urgency > midpoint
 
   if (isImportant && isUrgent) return 'important-urgent'
   if (isImportant && !isUrgent) return 'important-not-urgent'
