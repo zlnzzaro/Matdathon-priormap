@@ -50,7 +50,7 @@ export default function InputScreen({ onAnalyze, status, currentStep, errorMessa
 
       <div className="input-screen__container">
         <header className="input-screen__header">
-          <h1 className="input-screen__logo">Priority Map</h1>
+          <h1 className="input-screen__logo">PriorMap</h1>
           <p className="input-screen__tagline">
             할 일을 적으면 우선순위를 정리해 바로 실행할 수 있게 도와드립니다
           </p>
@@ -79,7 +79,7 @@ export default function InputScreen({ onAnalyze, status, currentStep, errorMessa
           </div>
 
           <p className="input-screen__hint">
-            Enter로 전송, 줄바꿈은 Shift + Enter
+            쉼표 또는 줄바꿈(Shift + Enter)으로 할 일을 구분해 주세요
           </p>
         </form>
 
