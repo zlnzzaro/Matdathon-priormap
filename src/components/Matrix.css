@@ -1,0 +1,75 @@
+.matrix {
+  width: 70%;
+  height: 100%;
+  padding: 40px 40px 40px 60px;
+  position: relative;
+  display: flex;
+}
+
+.matrix__axis-y {
+  position: absolute;
+  top: 16px;
+  left: 60px;
+  font-size: 12px;
+  color: #777;
+}
+
+.matrix__axis-x {
+  position: absolute;
+  bottom: 16px;
+  right: 40px;
+  font-size: 12px;
+  color: #777;
+}
+
+.matrix__area {
+  position: relative;
+  flex: 1;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.matrix__grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 2px;
+  background: #2a2a2a;
+}
+
+.matrix__cards {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.matrix__cards > * {
+  pointer-events: auto;
+}
+
+.matrix__quadrant {
+  background: #191919;
+  border-top: 3px solid var(--accent);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 14px 16px;
+  gap: 2px;
+}
+
+.matrix__label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+.matrix__sub {
+  font-size: 11px;
+  color: #777;
+}
