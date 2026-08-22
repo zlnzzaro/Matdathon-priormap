@@ -1,5 +1,8 @@
 # Priormap Agents
 
+## 주의
+절대 .env 파일을 커밋하거나 github에 업로드하지 마세요.
+
 ## 개요
 
 Priormap은 Microsoft Agent Framework를 기반으로 한 **Task Planning Agent**를 통해 사용자의 자연어 입력을 우선순위가 지정된 작업으로 변환합니다.
