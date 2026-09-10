@@ -21,7 +21,7 @@ Priormap은 자연어로 입력된 여러 할 일을 AI가 분석해 **Focus Now
 
 ---
 
-## ✨ 주요 기능
+##  주요 기능
 
 | 기능 | 설명 |
 |------|------|
@@ -35,7 +35,7 @@ Priormap은 자연어로 입력된 여러 할 일을 AI가 분석해 **Focus Now
 
 ---
 
-## 🛠️ 기술 스택
+##  기술 스택
 
 ### GitHub Copilot SDK & Agent Framework
 
@@ -80,7 +80,7 @@ Structured Analysis Result → User Edit → Approved State
 
 ---
 
-## 🚀 빠른 시작
+##  빠른 시작
 
 ### 로컬 실행
 
@@ -104,12 +104,9 @@ PORT=3001
 
 > GitHub 토큰은 `gh auth login`으로 인증하거나, 환경 변수로 별도 설정하기
 
-- 프론트엔드: http://localhost:5173
-- 백엔드 API: http://localhost:3001/api
-
 ---
 
-## ☁️ Azure 배포
+##  Azure 배포
 
 ### azd를 이용한 배포
 
@@ -147,7 +144,7 @@ Azure Subscription
 
 ---
 
-## 📁 프로젝트 구조
+##  프로젝트 구조
 
 ```
 priormap/
